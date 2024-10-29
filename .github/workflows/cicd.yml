@@ -14,9 +14,9 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/chat-node-app .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/chat-node-app:${{ github.sha }} .
       - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/chat-node-app
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/chat-node-app:${{ github.sha }}
 
   deploy:
     needs: build
@@ -27,6 +27,16 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Pull Docker Image
-        run: docker pull ${{ secrets.DOCKER_USERNAME }}/chat-node-app:latest
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/chat-node-app:${{ github.sha }}
+      - name: Remove existing container
+        run: |
+          if [ "$(docker ps -aq -f name=chat-node-app-container)" ]; then
+            docker rm -f chat-node-app-container
+          fi
       - name: Run Docker Container
-        run: docker run -d -p 5000:5000 --name chat-node-app-container -e MONGO_URI_CLOUD='${{ secrets.MONGO_URI_CLOUD }}' -e JWT_SECRET='${{ secrets.JWT_SECRET }}' -e PORT='${{ secrets.PORT }}' ${{ secrets.DOCKER_USERNAME }}/chat-node-app:latest
+        run: |
+          docker run -d -p 5000:5000 --name chat-node-app-container \
+            -e MONGO_URI_CLOUD='${{ secrets.MONGO_URI_CLOUD }}' \
+            -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
+            -e PORT='${{ secrets.PORT }}' \
+            ${{ secrets.DOCKER_USERNAME }}/chat-node-app:${{ github.sha }}
