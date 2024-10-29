@@ -1,0 +1,38 @@
+name: Deploy Node Application
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/chat-node-app .
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/chat-node-app
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Pull Docker Image
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/chat-node-app:latest
+      - name: Run Docker Container
+        run: docker run -d \
+          -p '${{secrets.PORT}}':5000 \
+          --name chat-node-app-container \
+          -e MONGO_URI_CLOUD='${{ secrets.MONGO_URI_CLOUD }}' \
+          -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
+          -e PORT='${{ secrets.PORT }}' \
+          ${{ secrets.DOCKER_USERNAME }}/chat-node-app

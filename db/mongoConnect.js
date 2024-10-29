@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { configDotenv } from "dotenv";
 
 configDotenv();
-const mongo_uri = process.env.MONGO_URI_LOCAL;
+const mongo_uri = process.env.MONGO_URI_CLOUD;
 const mongoConnect = async () => {
     try {
         await mongoose.connect(mongo_uri);
