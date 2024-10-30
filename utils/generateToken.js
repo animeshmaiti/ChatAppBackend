@@ -6,7 +6,7 @@ const generateTokenAndSetCookie = (userId, res) => {
         httpOnly: true,// client side js cannot access the cookie prevents xss attack
         sameSite: "strict",// CSRF attack
         maxAge: 15* 24 * 60 * 60 * 1000, // 15 day in milliseconds
-        secure: process.env.NODE_ENV === "production" ? true : false
+        secure: false
     });
 }
 
