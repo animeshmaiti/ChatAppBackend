@@ -39,4 +39,5 @@ jobs:
             -e MONGO_URI_CLOUD='${{ secrets.MONGO_URI_CLOUD }}' \
             -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
             -e PORT='${{ secrets.PORT }}' \
+            -e FRONTEND_URL='${{ secrets.FRONTEND_URL }}' \
             ${{ secrets.DOCKER_USERNAME }}/chat-node-app:${{ github.sha }}
